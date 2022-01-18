@@ -5,7 +5,7 @@ import { theory } from "../api/Theory";
 import { Utils } from "../api/Utils";
 
 var id = "convergence_test"
-var name = "Thoery 9 DLC";
+var name = "Theory 9 DLC";
 var description = "Additional lemmas similar to ones in Theory 9";
 var authors = "Playspout";
 var version = 1;
