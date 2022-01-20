@@ -4,8 +4,8 @@ import { BigNumber, parseBigNumber } from "../api/BigNumber";
 import { theory } from "../api/Theory";
 import { Utils } from "../api/Utils";
 
-var id = "convergence_test"
-var name = "Theory 9 DLC MoI";
+var id = "T9-DLC-MoI"
+var name = "Theory 9 DLC Master of Infinity";
 var description = "Additional lemmas similar to ones in Theory 9";
 var authors = "Playspout";
 var version = 1;
@@ -507,7 +507,7 @@ var tick = (elapsedTime, multiplier) => {
             } else if(q > 540) {
                 k = 0.1;
             } else {
-                k = 0.9;
+                k = 0.90;
             }
             
             currency.value += dt*k*(c1 * (((0.01*q) / (2*Math.PI)) % (2*Math.PI)) + c2 * (((0.01*q)**2 / (2*Math.PI)) % (2*Math.PI)) + c3 * (((0.01*q)**3 / (2*Math.PI)) % (2*Math.PI)));
@@ -645,7 +645,7 @@ var getPrimaryEquation = () => {
             result += "";
         }
 
-        if (lemma.level == 0) result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=20\\%,\\;t>600 => \\dot{\\rho}=0";
+        if (lemma.level == 0) result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=10\\%,\\;t>600 => \\dot{\\rho}=0";
         if (lemma.level == 1) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} dt\\: >\\: 0";
         if (lemma.level == 2) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} x\\: >\\: 0";
         if (lemma.level == 3) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} \\varphi\\: >\\: 0";
@@ -674,7 +674,7 @@ var getSecondaryEquation = () => {
     if (lemmaNumber == 1)
     {
         result += "\\begin{matrix}";
-        result += "\\dot{\\rho} = 2(c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi))";
+        result += "\\dot{\\rho} = 0.9(c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi))";
         result += "\\\\";
         
         result += "\\dot{t}=1 \\;\\;\\;\\; \\dot{q}=0.01";
@@ -893,9 +893,9 @@ var resetStage = () => {
     theory.clearGraph();
 }
 
-var canGoToPreviousStage = () => lemma.level > 0 && provedLemmas == lemmaCount;
+var canGoToPreviousStage = () => lemma.level > 0;
 var goToPreviousStage = () => lemma.level -= 1;
-var canGoToNextStage = () => lemma.level < provedLemmas;
+var canGoToNextStage = () => true;
 var goToNextStage = () => lemma.level += 1;
 
 init();

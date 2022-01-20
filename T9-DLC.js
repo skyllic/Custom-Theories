@@ -4,8 +4,8 @@ import { BigNumber, parseBigNumber } from "../api/BigNumber";
 import { theory } from "../api/Theory";
 import { Utils } from "../api/Utils";
 
-var id = "convergence_test"
-var name = "Theory 9 DLC";
+var id = "T9-DLC-Normal"
+var name = "Dilemma Normal";
 var description = "Additional lemmas similar to ones in Theory 9";
 var authors = "Playspout";
 var version = 1;
@@ -21,7 +21,7 @@ var lemma;
 
 const lemmaCount = 7;
 var provedLemmas = 0;
-var initialQ = [BigNumber.ZERO, BigNumber.ONE, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
+var initialQ = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
 var qs = Array.from(initialQ);
 var currencyValues = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
 var qDifferential = BigNumber.ZERO;
@@ -69,9 +69,9 @@ var init = () => {
 
     // c1
     {
-        let getDesc = (level) => "c_1=" + getC21(level).toString(0);
+        let getDesc = (level) => "c_1=2^{" + level + "}";
         let getInfo = (level) => "c_1=" + getC21(level).toString(0);
-        c21 = theory.createUpgrade(baseId + 0, currency, new FirstFreeCost(new ExponentialCost(10, Math.log2(1.5))));
+        c21 = theory.createUpgrade(baseId + 0, currency, new FirstFreeCost(new ExponentialCost(300, Math.log2(10**2))));
         c21.getDescription = (amount) => Utils.getMath(getDesc(c21.level));
         c21.getInfo = (amount) => Utils.getMathTo(getInfo(c21.level), getInfo(c21.level + amount));
         c21.boughtOrRefunded = (_) => theory.invalidateSecondaryEquation();
@@ -81,7 +81,7 @@ var init = () => {
     {
         let getDesc = (level) => "c_2=2^{" + level + "}";
         let getInfo = (level) => "c_2=" + getC22(level).toString(0);
-        c22 = theory.createUpgrade(baseId + 1, currency, new ExponentialCost(30, Math.log2(3)));
+        c22 = theory.createUpgrade(baseId + 1, currency, new ExponentialCost(100, Math.log2(10**3)));
         c22.getDescription = (amount) => Utils.getMath(getDesc(c22.level));
         c22.getInfo = (amount) => Utils.getMathTo(getInfo(c22.level), getInfo(c22.level + amount));
         c22.boughtOrRefunded = (_) => theory.invalidateSecondaryEquation();
@@ -89,9 +89,9 @@ var init = () => {
 
     // c3
     {
-        let getDesc = (level) => "c_3=" + getC23(level).toString(0);
+        let getDesc = (level) => "c_3=2^{" + level + "}";
         let getInfo = (level) => "c_3=" + getC23(level).toString(0);
-        c23 = theory.createUpgrade(baseId + 2, currency, new ExponentialCost(200, Math.log2(1.3)));
+        c23 = theory.createUpgrade(baseId + 2, currency, new ExponentialCost(100, Math.log2(10**4)));
         c23.getDescription = (amount) => Utils.getMath(getDesc(c23.level));
         c23.getInfo = (amount) => Utils.getMathTo(getInfo(c23.level), getInfo(c23.level + amount));
         c23.boughtOrRefunded = (_) => theory.invalidateSecondaryEquation();
@@ -101,7 +101,7 @@ var init = () => {
     {
         let getDesc = (level) => "c_4=2^{" + level + "}";
         let getInfo = (level) => "c_4=" + getC24(level).toString(0);
-        c24 = theory.createUpgrade(baseId + 3, currency, new ExponentialCost(250, Math.log2(2)));
+        c24 = theory.createUpgrade(baseId + 3, currency, new ExponentialCost(100, Math.log2(10**5)));
         c24.getDescription = (amount) => Utils.getMath(getDesc(c24.level));
         c24.getInfo = (amount) => Utils.getMathTo(getInfo(c24.level), getInfo(c24.level + amount));
         c24.boughtOrRefunded = (_) => theory.invalidateSecondaryEquation();
@@ -387,7 +387,7 @@ var init = () => {
         switch(level+1)
         {
             case 1: cost = 1e10; break;
-            case 2: cost = 1e8; break;
+            case 2: cost = 1e20; break;
             case 3: cost = 1e20; break;
             case 4: cost = 1.0001e10; break; // To compensate for numerical errors
             case 5: cost = 1e25; break;
@@ -519,7 +519,8 @@ var tick = (elapsedTime, multiplier) => {
             let c3 = getC23(c23.level);
             let c4 = getC24(c24.level);
             qDifferential = (c1 * c2 + c3 * c4) / q.pow(getQ2Exp());
-            currency.value += dt * qDifferential;
+            
+            currency.value += dt * (600-q)*q/600 * c1*c2*c3*c4*q;
         }
         else if (lemmaNumber == 3)
         {
@@ -674,7 +675,7 @@ var getSecondaryEquation = () => {
     if (lemmaNumber == 1)
     {
         result += "\\begin{matrix}";
-        result += "\\dot{\\rho} = 2(c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi))";
+        result += "\\dot{\\rho} = c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi)";
         result += "\\\\";
         
         result += "\\dot{t}=1 \\;\\;\\;\\; \\dot{q}=0.01";
@@ -683,10 +684,10 @@ var getSecondaryEquation = () => {
     else if (lemmaNumber == 2)
     {
         result += "\\begin{matrix}";
-        result += "\\dot{\\rho}=(c_1c_2 + c_3c_4)/q^{";
-        result += getQ2Exp().toString(2);
-        result += "}\\\\";
-        result += "\\dot{q}=1";
+        result += "\\dot{\\rho}=(c_1c_2c_3c_4)(600-t)";
+        result += "";
+        result += "\\\\";
+        result += "\\dot{t}=1";
         result += "\\end{matrix}";
     }
     else if (lemmaNumber == 3)
@@ -747,9 +748,9 @@ var getTertiaryEquation = () => {
     let result = "";
     let q = qs[lemma.level];
 
-    result += "q = ";
-    result += (0.01*q.floor()).toString();
-    result+= "\\;\\;\\;\\;"
+    result += "";
+    result += "";
+    result+= ""
     
     
     result += "t=";
@@ -759,13 +760,7 @@ var getTertiaryEquation = () => {
 
     if (lemmaNumber == 2)
     {
-        result += ",\\; q^{";
-        var qExp = getQ2Exp();
-        result += qExp.toString(2);
-        result += "}=";
-        result += (q.pow(qExp)).toString(2);
-        result += ",\\; \\dot{\\rho}=";
-        result += qDifferential.toString(2);
+       
     }
     if (lemmaNumber == 4 || lemmaNumber == 5)
     {
@@ -798,10 +793,10 @@ var getC11 = (level) => BigNumber.FIVE.pow(level);
 var getC12 = (level) => BigNumber.FIVE.pow(level);
 var getC13 = (level) => BigNumber.FIVE.pow(level);
 
-var getC21 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 0);
-var getC22 = (level) => BigNumber.TWO.pow(level);
-var getC23 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 0);
-var getC24 = (level) => BigNumber.TWO.pow(level);
+var getC21 = (level) => BigNumber.TWO.pow(level);
+var getC22 = (level) => BigNumber.THREE.pow(level);
+var getC23 = (level) => BigNumber.FOUR.pow(level);
+var getC24 = (level) => BigNumber.FIVE.pow(level);
 var getQ2Exp = () => BigNumber.from((c21.level + c22.level + c23.level + c24.level) / 100.0);
 
 var getQ31 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 0);
@@ -893,9 +888,9 @@ var resetStage = () => {
     theory.clearGraph();
 }
 
-var canGoToPreviousStage = () => lemma.level > 0 && provedLemmas == lemmaCount;
+var canGoToPreviousStage = () => lemma.level > 0;
 var goToPreviousStage = () => lemma.level -= 1;
-var canGoToNextStage = () => lemma.level < provedLemmas;
+var canGoToNextStage = () => true;
 var goToNextStage = () => lemma.level += 1;
 
 init();
