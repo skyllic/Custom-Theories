@@ -700,7 +700,7 @@ var getSecondaryEquation = () => {
     else if (lemmaNumber == 2)
     {
         result += "\\begin{matrix}";
-        result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{600}";
+        result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{6000}";
         result += "";
         result += "\\\\";
         result += "\\dot{t}=1";
