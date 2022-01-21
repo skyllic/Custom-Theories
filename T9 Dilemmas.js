@@ -22,7 +22,7 @@ var lemma;
 
 var PB = 100000;
 
-const lemmaCount = 3;
+const lemmaCount = 2;
 var provedLemmas = 0;
 var initialQ = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
 var qs = Array.from(initialQ);
@@ -132,7 +132,7 @@ var init = () => {
         
         let getDesc = (level) => "c_1=2^{" + level + "}";
         let getInfo = (level) => "c_1=" + getC31(level).toString(0);
-        c31 = theory.createUpgrade(baseId + 2, currency, new FirstFreeCost(new ExponentialCost(10000, Math.log2(10))));
+        c31 = theory.createUpgrade(baseId + 2, currency, new FirstFreeCost(new ExponentialCost(200, Math.log2(2))));
         c31.getDescription = (amount) => Utils.getMath(getDesc(c31.level));
         c31.getInfo = (amount) => Utils.getMathTo(getInfo(c31.level), getInfo(c31.level + amount));
     }
@@ -141,7 +141,7 @@ var init = () => {
     {
         let getDesc = (level) => "c_2=2^{" + level + "}";
         let getInfo = (level) => "c_2=" + getC32(level).toString(0);
-        c32 = theory.createUpgrade(baseId + 3, currency, new ExponentialCost(100, Math.log2(10)));
+        c32 = theory.createUpgrade(baseId + 3, currency, new ExponentialCost(100, Math.log2(2)));
         c32.getDescription = (amount) => Utils.getMath(getDesc(c32.level));
         c32.getInfo = (amount) => Utils.getMathTo(getInfo(c32.level), getInfo(c32.level + amount));
         
@@ -151,7 +151,7 @@ var init = () => {
     {
         let getDesc = (level) => "c_3=2^{" + level + "}";
         let getInfo = (level) => "c_3=" + getC33(level).toString(0);
-        c33 = theory.createUpgrade(baseId + 4, currency, new ExponentialCost(100, Math.log2(10)));
+        c33 = theory.createUpgrade(baseId + 4, currency, new ExponentialCost(100, Math.log2(2)));
         c33.getDescription = (amount) => Utils.getMath(getDesc(c33.level));
         c33.getInfo = (amount) => Utils.getMathTo(getInfo(c33.level), getInfo(c33.level + amount));
     }
@@ -402,13 +402,13 @@ var init = () => {
         {
             case 1: cost = 1e10; break;
             case 2: cost = 4.05e22; break;
-            case 3: cost = 1e20; break;
+            case 3: cost = 1e20; break; 
             case 4: cost = 1.0001e10; break; // To compensate for numerical errors
             case 5: cost = 1e25; break;
             case 6: cost = 1e15; break;
             case 7: cost = 1e15; break;
         }
-
+        
         return BigNumber.from(cost);
     });
 
@@ -439,7 +439,7 @@ var updateAvailability = () => {
     
     c31.isAvailable = lemma.level == 2;
     c32.isAvailable = lemma.level == 2;
-    c33.isAvailable = lemma.level == 2;
+    c33.isAvailable = lemma.level == 2 && c14.level > 1;
     
 
     c41.isAvailable = lemma.level == 3;
@@ -529,7 +529,7 @@ var tick = (elapsedTime, multiplier) => {
 
                 
                 case 1:
-                    k = 10000.0;
+                    k = 2.0;
                     break;
                 case 2:
                     if(q > 600) {
@@ -579,7 +579,7 @@ var tick = (elapsedTime, multiplier) => {
             switch(c14.level+1) {
                 
                 case 1:
-                    currency.value += dt * (600-q)/6000 * c1*c2*c3*c4*c5*q;
+                    currency.value += dt * (600-q)/3000 * c1*c2*c3*c4*c5*q;
                     break;
                 case 2:
                     currency.value += dt * (600-q)/9000 * c1*c2*c3*c4*c5*q;
@@ -604,6 +604,35 @@ var tick = (elapsedTime, multiplier) => {
             let term1 = c1*(20*Math.sin(q/10) - q/30);
             let term2 = c2*(20 * Math.cos(q/20)**2 - q/30);
             let term3 = c3 * (Math.min(20, 20*Math.abs(Math.tan(q/10)))-q/30);
+
+            switch(c14.level+1) {
+                
+                
+                case 1:
+                    let term1 = c1*(100*Math.sin(q/10));
+                    let term2 = c2*(100 * Math.cos(q/20)**2);
+                    
+                    currency.value += dt * (term1+term2);
+                    break;
+                case 2:
+                    let term1 = c1*(100*Math.sin(q/10) - q/30);
+                    let term2 = c2*(100 * Math.cos(q/20)**2 - q/30);
+                    
+                    currency.value += dt * (term1+term2);
+                    break;
+                case 3:
+                    let term1 = c1*(30*Math.sin(q/10) - q/30);
+                    let term2 = c2*(30 * Math.cos(q/20)**2 - q/30);
+                    let term3 = c3 * (Math.min(20, 20*Math.abs(Math.tan(q/10)))-q/30);
+                    currency.value += dt * (term1+term2+term3);
+                    break;
+                case 4:
+                    let term1 = c1*(20*Math.sin(q/10) - q/30);
+                    let term2 = c2*(20 * Math.cos(q/20)**2 - q/30);
+                    let term3 = c3 * (Math.min(20, 20*Math.abs(Math.tan(q/10)))-q/30);
+                    currency.value += dt * (term1+term2+term3);
+                    break;
+            }
 
             currency.value += dt * (term1+term2+term3);
             
@@ -734,9 +763,9 @@ var getPrimaryEquation = () => {
             switch(c14.level+1) {
                 
                 case 1:
-                    result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1";
+                    result += "Dilemma \\; 1";
                     
-                    result += "\\\\t>540 => \\dot{\\rho}=50\\%,\\;t>600 => \\dot{\\rho}=0";
+                    result += "\\\\";
                     result += "";
                     break;
                 case 2:
@@ -782,7 +811,7 @@ var getSecondaryEquation = () => {
         switch(c14.level + 1) {
             
             case 1:
-                result += "c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi)";
+                result += "2(c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi))";
                 break;
             case 2:
                 result += "c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi)";
@@ -807,7 +836,7 @@ var getSecondaryEquation = () => {
         switch(c14.level+1) {
             
             case 1:
-                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{6000}";
+                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{3000}";
                 break;
             case 2:
                 result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{9000}";
@@ -828,12 +857,44 @@ var getSecondaryEquation = () => {
     else if (lemmaNumber == 3)
     {
         result += "\\begin{matrix}";
-        result += "\\dot{\\rho} = a + b + c\\\\";
-        result += "a=c_1(20sin(\\frac{t}{10}) - \\frac{t}{30})";
-        result += "\\\\";
-        result += "b=c_2(20cos^2(\\frac{t}{20}) - \\frac{t}{30})";
-        result += "\\\\";
-        result += "c=c_3(min(20, abs(20tan(\\frac{t}{10})))-\\frac{t}{30})";
+        switch(c14.level+1) {
+            
+            case 1:
+                result += "\\dot{\\rho} = a + b\\\\";
+                result += "a=c_1(100sin(\\frac{t}{10})";
+                result += "\\\\";
+                result += "b=c_2(100cos^2(\\frac{t}{20})";
+                
+                break;
+            case 2:
+                result += "\\dot{\\rho} = a + b + c\\\\";
+                result += "a=c_1(100sin(\\frac{t}{10}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "b=c_2(100cos^2(\\frac{t}{20}) - \\frac{t}{30})";
+                
+                break;
+            case 3:
+                result += "\\dot{\\rho} = a + b\\\\";
+                result += "a=c_1(30sin(\\frac{t}{10}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "b=c_2(30cos^2(\\frac{t}{20}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "c=c_3(min(30, abs(30tan(\\frac{t}{10})))-\\frac{t}{30})";
+                break;
+            case 4:
+                result += "\\dot{\\rho} = a + b + c\\\\";
+                result += "a=c_1(20sin(\\frac{t}{10}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "b=c_2(20cos^2(\\frac{t}{20}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "c=c_3(min(20, abs(20tan(\\frac{t}{10})))-\\frac{t}{30})";
+                break;
+        }
+
+
+
+
+       
         result += "\\\\";
         result += "\\dot{t} = 1";
         result += "\\end{matrix}";
