@@ -3,9 +3,10 @@ import { Localization } from "../api/Localization";
 import { BigNumber, parseBigNumber } from "../api/BigNumber";
 import { theory } from "../api/Theory";
 import { Utils } from "../api/Utils";
+import { FreeCost } from "../TheorySDK.Win.1.4.22/api/Costs";
 
 var id = "T9-DLC-MoI"
-var name = "Theory 9 DLC Master of Infinity";
+var name = "Dilemmas";
 var description = "Additional lemmas similar to ones in Theory 9";
 var authors = "Playspout";
 var version = 1;
@@ -19,7 +20,7 @@ var q61, q62, c61, c62, c63, c64;
 var q71, q72, c71, c72;
 var lemma;
 
-const lemmaCount = 2;
+const lemmaCount = 3;
 var provedLemmas = 0;
 var initialQ = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
 var qs = Array.from(initialQ);
@@ -64,6 +65,7 @@ var init = () => {
         c13.getInfo = (amount) => Utils.getMathTo(getInfo(c13.level), getInfo(c13.level + amount));
     }
 
+ 
     // Lemma 2
     baseId += 100;
 
@@ -373,6 +375,20 @@ var init = () => {
         c72.getInfo = (amount) => Utils.getMathTo(getInfo(c72.level), getInfo(c72.level + amount));
     }
 
+       // c4
+       {
+        let getDesc = (level) => "\\text{Select\\; difficulty\\; level}";
+        let getInfo = (level) => "";
+        c14 = theory.createUpgrade(baseId + 30000, currency, new FreeCost());
+        c14.getDescription = (amount) => Utils.getMath(getDesc(c14.level));
+        c14.getInfo = (amount) => Utils.getMathTo(getInfo(c14.level), getInfo(c14.level + amount));
+        c14.maxLevel = 4;
+        c14.boughtOrRefunded = (_) => {theory.invalidatePrimaryEquation(); theory.invalidateSecondaryEquation(); updateAvailability(); onLemmaChanged();}
+        
+
+        
+    }
+
     ///////////////////
     // Singular Upgrade
     let lemmaCost = new CustomCost((level) =>
@@ -408,17 +424,20 @@ var updateAvailability = () => {
     c11.isAvailable = lemma.level == 0;
     c12.isAvailable = lemma.level == 0;
     c13.isAvailable = lemma.level == 0;
+    
 
     c21.isAvailable = lemma.level == 1;
     c22.isAvailable = lemma.level == 1;
     c23.isAvailable = lemma.level == 1;
     c24.isAvailable = lemma.level == 1;
     c25.isAvailable = lemma.level == 1;
+    
 
     
     c31.isAvailable = lemma.level == 2;
     c32.isAvailable = lemma.level == 2;
     c33.isAvailable = lemma.level == 2;
+    
 
     c41.isAvailable = lemma.level == 3;
     c42.isAvailable = lemma.level == 3;
@@ -446,6 +465,8 @@ var updateAvailability = () => {
     q72.isAvailable = lemma.level == 6;
     c71.isAvailable = lemma.level == 6;
     c72.isAvailable = lemma.level == 6;
+
+    c14.isAvailable = (lemma.level >= 0 || lemma.level <= lemma.maxLevel);
 }
 
 var onLemmaChanged = () => {
@@ -458,7 +479,8 @@ var tick = (elapsedTime, multiplier) => {
     let dt = BigNumber.from(elapsedTime); // No multiplier. Everyone is equal.
     let lemmaNumber = lemma.level + 1;
     let isLemmaStarted = qs[lemma.level] > initialQ[lemma.level];
-
+    getSecondaryEquation();
+   
     switch(lemmaNumber)
     {
         case 1: isLemmaStarted |= c11.level > 0; break;
@@ -474,6 +496,7 @@ var tick = (elapsedTime, multiplier) => {
     if (isLemmaStarted)
     {
         let q1q2 = BigNumber.ONE;
+        c14.isAvailable = false;
 
         switch(lemmaNumber)
         {
@@ -492,19 +515,65 @@ var tick = (elapsedTime, multiplier) => {
 
         if (lemmaNumber == 1)
         {
+            
             let c1 = getC11(c11.level);
             let c2 = getC12(c12.level);
             let c3 = getC13(c13.level);
+            let c4 = getC14(c14.level);
             let k = 1;
 
-            if(q > 600) {
-                k = 0;
-            } else if(q > 540) {
-                k = 0.1;
-            } else {
-                k = 0.90;
+            switch(c14.level) {
+
+                case 0:
+                    if(q > 600) {
+                        k = 0;
+                    } else if(q > 540) {
+                        k = 1.0;
+                    } else {
+                        k = 1.0;
+                    }
+                    break;
+                case 1:
+                    if(q > 600) {
+                        k = 0;
+                    } else if(q > 540) {
+                        k = 0.5;
+                    } else {
+                        k = 1.0;
+                    }
+                    break;
+                case 2:
+                    if(q > 600) {
+                        k = 0;
+                    } else if(q > 540) {
+                        k = 0.2;
+                    } else {
+                        k = 1.0;
+                    }
+                    break;
+                case 3:
+                    if(q > 600) {
+                        k = 0;
+                    } else if(q > 540) {
+                        k = 0.2;
+                    } else {
+                        k = 0.90;
+                    }
+                    break;
+                case 4:
+                    if(q > 600) {
+                        k = 0;
+                    } else if(q > 540) {
+                        k = 0.12;
+                    } else {
+                        k = 0.90;
+                    }
+                    break;
+                
+
+
             }
-            
+
             currency.value += dt*k*(c1 * (((0.01*q) / (2*Math.PI)) % (2*Math.PI)) + c2 * (((0.01*q)**2 / (2*Math.PI)) % (2*Math.PI)) + c3 * (((0.01*q)**3 / (2*Math.PI)) % (2*Math.PI)));
         }
         else if (lemmaNumber == 2)
@@ -515,7 +584,25 @@ var tick = (elapsedTime, multiplier) => {
             let c4 = getC24(c24.level);
             let c5 = getC25(c25.level);
             qDifferential = (c1 * c2 * c3 * c4 * c5) * (600 - q)/ 600;
-            currency.value += dt * (600-q)/12000 * c1*c2*c3*c4*c5*q;
+
+            switch(c14.level) {
+                case 0:
+                    currency.value += dt * (600-q)/1000 * c1*c2*c3*c4*c5*q;
+                    break;
+                case 1:
+                    currency.value += dt * (600-q)/3000 * c1*c2*c3*c4*c5*q;
+                    break;
+                case 2:
+                    currency.value += dt * (600-q)/6000 * c1*c2*c3*c4*c5*q;
+                    break;
+                case 3:
+                    currency.value += dt * (600-q)/9000 * c1*c2*c3*c4*c5*q;
+                    break;
+                case 4:
+                    currency.value += dt * (600-q)/12000 * c1*c2*c3*c4*c5*q;
+                    break;
+            }
+            
         }
         else if (lemmaNumber == 3)
         {
@@ -525,7 +612,12 @@ var tick = (elapsedTime, multiplier) => {
             let twoExpC1 = BigNumber.TWO.pow(c1);
             if (c31.level % 2 == 1)
                 twoExpC1 = -twoExpC1;
-            currency.value += dt * (20*Math.sin(q/10) + 20 * (Math.cos(q/20))**2 + Math.min(20, Math.abs(20*Math.tan(q/10))) - q/10);
+            let term1 = c1*(20*Math.sin(q/10) - q/30);
+            let term2 = c2*(20 * Math.cos(q/20)**2 - q/30);
+            let term3 = c3 * (Math.min(20, 20*Math.abs(Math.tan(q/10)))-q/30);
+
+            currency.value += dt * (term1+term2+term3);
+            
         }
         else if (lemmaNumber == 4)
         {
@@ -641,9 +733,27 @@ var getPrimaryEquation = () => {
             result += "";
         }
 
-        if (lemma.level == 0) result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=10\\%,\\;t>600 => \\dot{\\rho}=0";
+        if (lemma.level == 0) 
+            switch(c14.level) {
+                case 0:
+                    result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=100\\%,\\;t>600 => \\dot{\\rho}=0";
+                    break;
+                case 1:
+                    result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=50\\%,\\;t>600 => \\dot{\\rho}=0";
+                    break;
+                case 2:
+                    result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=20\\%,\\;t>600 => \\dot{\\rho}=0";
+                    break;
+                case 3:
+                    result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=20\\%,\\;t>600 => \\dot{\\rho}=0";
+                    break;
+                case 4:
+                    result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=12\\%,\\;t>600 => \\dot{\\rho}=0";
+                    break;
+            } 
+                
         if (lemma.level == 1) result += "Dilemma \\; 2";
-        if (lemma.level == 2) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} x\\: >\\: 0";
+        if (lemma.level == 2) result += "Dilemma \\; 3";
         if (lemma.level == 3) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} \\varphi\\: >\\: 0";
         if (lemma.level == 4) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} \\tau\\: >\\: 0";
         if (lemma.level == 5) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} e^{bx_i\\varphi\\tau dt}\\: >\\: 1";
@@ -663,14 +773,33 @@ var getPrimaryEquation = () => {
 }
 
 var getSecondaryEquation = () => {
-    theory.secondaryEquationHeight = 55;
+    theory.secondaryEquationHeight = 100;
     let result = "";
     let lemmaNumber = lemma.level + 1;
 
     if (lemmaNumber == 1)
     {
         result += "\\begin{matrix}";
-        result += "\\dot{\\rho} = 0.9(c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi))";
+        result += "\\dot{\\rho} =";
+        switch(c14.level) {
+            case 0:
+                result += "c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi)";
+                break;
+            case 1:
+                result += "c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi)";
+                break;
+            case 2:
+                result += "c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi)";
+                break;
+            case 3:
+                result += "0.9(c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi))";
+                break;
+            case 4:
+                result += "0.9(c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi))";
+                break;
+
+        }
+    
         result += "\\\\";
         
         result += "\\dot{t}=1 \\;\\;\\;\\; \\dot{q}=0.01";
@@ -679,7 +808,24 @@ var getSecondaryEquation = () => {
     else if (lemmaNumber == 2)
     {
         result += "\\begin{matrix}";
-        result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{12000}";
+        switch(c14.level) {
+            case 0:
+                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{1000}";
+                break;
+            case 1:
+                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{3000}";
+                break;
+            case 2:
+                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{6000}";
+                break;
+            case 3:
+                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{9000}";
+                break;
+            case 4:
+                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{12000}";
+                break;
+        }
+        
         result += "";
         result += "\\\\";
         result += "\\dot{t}=1";
@@ -688,9 +834,14 @@ var getSecondaryEquation = () => {
     else if (lemmaNumber == 3)
     {
         result += "\\begin{matrix}";
-        result += "\\dot{\\rho}=(-2)^{c_1}c_2 + c_3q";
+        result += "\\dot{\\rho} = a + b + c\\\\";
+        result += "a=c_1(20sin(\\frac{t}{10}) - \\frac{t}{30})";
         result += "\\\\";
-        result += "\\dot{q}=q_1q_2";
+        result += "b=c_2(20cos^2(\\frac{t}{20}) - \\frac{t}{30})";
+        result += "\\\\";
+        result += "c=c_3(min(20, abs(20tan(\\frac{t}{10})))-\\frac{t}{30})";
+        result += "\\\\";
+        result += "\\dot{t} = 1";
         result += "\\end{matrix}";
     }
     else if (lemmaNumber == 4)
@@ -750,6 +901,25 @@ var getTertiaryEquation = () => {
     
     result += "t=";
     result += q.toString();
+    result += "\\; \\; \\; \\; \\text{Difficulty :} ";
+    switch(c14.level) {
+        case 0:
+            result += "\\text{easy}";
+            break;
+        case 1:
+            result += "\\text{normal}";
+            break;
+        case 2:
+            result += "\\text{hard}";
+            break;
+        case 3:
+            result += "\\text{expert}";
+            break;
+        case 4:
+            result += "\\text{master\\; of\\;infinity}";
+            break;
+    }
+    
 
     let lemmaNumber = lemma.level + 1;
 
@@ -788,6 +958,7 @@ var get2DGraphValue = () => currency.value.sign * (BigNumber.ONE + currency.valu
 var getC11 = (level) => BigNumber.FIVE.pow(level);
 var getC12 = (level) => BigNumber.FIVE.pow(level);
 var getC13 = (level) => BigNumber.FIVE.pow(level);
+var getC14 = (level) => BigNumber.FIVE.pow(level);
 
 var getC21 = (level) => BigNumber.TWO.pow(level);
 var getC22 = (level) => BigNumber.THREE.pow(level);
@@ -798,7 +969,7 @@ var getC25 = (level) => BigNumber.SIX.pow(level);
 var getQ2Exp = () => BigNumber.from((c21.level + c22.level + c23.level + c24.level) / 100.0);
 
 
-var getC31 = (level) => BigNumber.TWO.pow(level);
+var getC31 = (level) => c31.level == 0 ? BigNumber.ZERO :  BigNumber.TWO.pow(level);
 var getC32 = (level) => BigNumber.TWO.pow(level);
 var getC33 = (level) => BigNumber.TWO.pow(level);
 
@@ -831,6 +1002,7 @@ var resetStage = () => {
             c11.level = 0;
             c12.level = 0;
             c13.level = 0;
+            c14.isAvailable = true;
             break;
         case 2:
             c21.level = 0;
@@ -838,17 +1010,20 @@ var resetStage = () => {
             c23.level = 0;
             c24.level = 0;
             c25.level = 0;
+            c14.isAvailable = true;
             break;
         case 3:
             
             c31.level = 0;
             c32.level = 0;
             c33.level = 0;
+            c14.isAvailable = true;
             break;
         case 4:
             c41.level = 0;
             c42.level = 0;
             c43.level = 0;
+            c14.isAvailable = true;
             break;
         case 5:
             q51.level = 0;
@@ -861,6 +1036,7 @@ var resetStage = () => {
             c56.level = 0;
             c57.level = 0;
             c58.level = 0;
+            c14.isAvailable = true;
             break;
         case 6:
             q61.level = 0;
@@ -869,12 +1045,14 @@ var resetStage = () => {
             c62.level = 0;
             c63.level = 2;
             c64.level = 0;
+            c14.isAvailable = true;
             break;
         case 7:
             q71.level = 0;
             q72.level = 0;
             c71.level = 0;
             c72.level = 0;
+            c14.isAvailable = true;
             break;
     }
 
