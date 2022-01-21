@@ -20,11 +20,14 @@ var q61, q62, c61, c62, c63, c64;
 var q71, q72, c71, c72;
 var lemma;
 
+var PB = 100000;
+
 const lemmaCount = 3;
 var provedLemmas = 0;
 var initialQ = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
 var qs = Array.from(initialQ);
 var currencyValues = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
+var PBs = [BigNumber.THOUSAND, BigNumber.THOUSAND, BigNumber.THOUSAND, BigNumber.THOUSAND, BigNumber.THOUSAND, BigNumber.THOUSAND, BigNumber.THOUSAND, BigNumber.THOUSAND,];
 var qDifferential = BigNumber.ZERO;
 
 const isRTL = Localization.isRTL;
@@ -382,7 +385,7 @@ var init = () => {
         c14 = theory.createUpgrade(baseId + 30000, currency, new FreeCost());
         c14.getDescription = (amount) => Utils.getMath(getDesc(c14.level));
         c14.getInfo = (amount) => Utils.getMathTo(getInfo(c14.level), getInfo(c14.level + amount));
-        c14.maxLevel = 4;
+        c14.maxLevel = 3;
         c14.boughtOrRefunded = (_) => {theory.invalidatePrimaryEquation(); theory.invalidateSecondaryEquation(); updateAvailability(); onLemmaChanged();}
         
 
@@ -398,7 +401,7 @@ var init = () => {
         switch(level+1)
         {
             case 1: cost = 1e10; break;
-            case 2: cost = 3.85e22; break;
+            case 2: cost = 4.05e22; break;
             case 3: cost = 1e20; break;
             case 4: cost = 1.0001e10; break; // To compensate for numerical errors
             case 5: cost = 1e25; break;
@@ -522,25 +525,11 @@ var tick = (elapsedTime, multiplier) => {
             let c4 = getC14(c14.level);
             let k = 1;
 
-            switch(c14.level) {
+            switch(c14.level+1) {
 
-                case 0:
-                    if(q > 600) {
-                        k = 0;
-                    } else if(q > 540) {
-                        k = 1.0;
-                    } else {
-                        k = 1.0;
-                    }
-                    break;
+                
                 case 1:
-                    if(q > 600) {
-                        k = 0;
-                    } else if(q > 540) {
-                        k = 0.5;
-                    } else {
-                        k = 1.0;
-                    }
+                    k = 10000.0;
                     break;
                 case 2:
                     if(q > 600) {
@@ -573,7 +562,9 @@ var tick = (elapsedTime, multiplier) => {
 
 
             }
-
+            
+            
+           
             currency.value += dt*k*(c1 * (((0.01*q) / (2*Math.PI)) % (2*Math.PI)) + c2 * (((0.01*q)**2 / (2*Math.PI)) % (2*Math.PI)) + c3 * (((0.01*q)**3 / (2*Math.PI)) % (2*Math.PI)));
         }
         else if (lemmaNumber == 2)
@@ -585,18 +576,16 @@ var tick = (elapsedTime, multiplier) => {
             let c5 = getC25(c25.level);
             qDifferential = (c1 * c2 * c3 * c4 * c5) * (600 - q)/ 600;
 
-            switch(c14.level) {
-                case 0:
-                    currency.value += dt * (600-q)/1000 * c1*c2*c3*c4*c5*q;
-                    break;
+            switch(c14.level+1) {
+                
                 case 1:
-                    currency.value += dt * (600-q)/3000 * c1*c2*c3*c4*c5*q;
-                    break;
-                case 2:
                     currency.value += dt * (600-q)/6000 * c1*c2*c3*c4*c5*q;
                     break;
-                case 3:
+                case 2:
                     currency.value += dt * (600-q)/9000 * c1*c2*c3*c4*c5*q;
+                    break;
+                case 3:
+                    currency.value += dt * (600-q)/11000 * c1*c2*c3*c4*c5*q;
                     break;
                 case 4:
                     currency.value += dt * (600-q)/12000 * c1*c2*c3*c4*c5*q;
@@ -676,11 +665,16 @@ var getInternalState = () => {
     for (let i = 0; i < lemmaCount; ++i)
         result += qs[i].toString() + " " + currencyValues[i].toString() + " ";
 
+        
+
     return result;
 }
 
+
 var setInternalState = (state) => {
     let values = state.split(" ");
+    
+    
     if (values.length > 0) provedLemmas = parseInt(values[0]);
 
     for (let i = 0; i < lemmaCount; ++i)
@@ -688,6 +682,9 @@ var setInternalState = (state) => {
         if (values.length > 2*i + 1) qs[i] = parseBigNumber(values[2*i + 1]);
         if (values.length > 2*i + 2) currencyValues[i] = parseBigNumber(values[2*i + 2]);
     }
+
+   
+    
 }
 
 var isCurrencyVisible = (index) => lemma.level < lemmaCount;
@@ -734,12 +731,13 @@ var getPrimaryEquation = () => {
         }
 
         if (lemma.level == 0) 
-            switch(c14.level) {
-                case 0:
-                    result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=100\\%,\\;t>600 => \\dot{\\rho}=0";
-                    break;
+            switch(c14.level+1) {
+                
                 case 1:
-                    result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=50\\%,\\;t>600 => \\dot{\\rho}=0";
+                    result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1";
+                    
+                    result += "\\\\t>540 => \\dot{\\rho}=50\\%,\\;t>600 => \\dot{\\rho}=0";
+                    result += "";
                     break;
                 case 2:
                     result += "\\quad\\quad\\quad \\quad \\quad \\quad \\quad Dilemma \\; 1 \\\\t>540 => \\dot{\\rho}=20\\%,\\;t>600 => \\dot{\\rho}=0";
@@ -781,10 +779,8 @@ var getSecondaryEquation = () => {
     {
         result += "\\begin{matrix}";
         result += "\\dot{\\rho} =";
-        switch(c14.level) {
-            case 0:
-                result += "c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi)";
-                break;
+        switch(c14.level + 1) {
+            
             case 1:
                 result += "c_1 (\\frac{q}{2\\pi}mod\\;2\\pi) + c_2(\\frac{q^2}{2\\pi}mod\\;2\\pi)+c_3(\\frac{q^3}{2\\pi}mod\\;2\\pi)";
                 break;
@@ -808,18 +804,16 @@ var getSecondaryEquation = () => {
     else if (lemmaNumber == 2)
     {
         result += "\\begin{matrix}";
-        switch(c14.level) {
-            case 0:
-                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{1000}";
-                break;
+        switch(c14.level+1) {
+            
             case 1:
-                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{3000}";
-                break;
-            case 2:
                 result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{6000}";
                 break;
-            case 3:
+            case 2:
                 result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{9000}";
+                break;
+            case 3:
+                result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{11000}";
                 break;
             case 4:
                 result += "\\dot{\\rho}=(c_1c_2c_3c_4c_5)\\frac{600-t}{12000}";
@@ -901,11 +895,11 @@ var getTertiaryEquation = () => {
     
     result += "t=";
     result += q.toString();
+    result += "\\; \\; \\; \\;";
+    
     result += "\\; \\; \\; \\; \\text{Difficulty :} ";
-    switch(c14.level) {
-        case 0:
-            result += "\\text{easy}";
-            break;
+    switch(c14.level+1) {
+        
         case 1:
             result += "\\text{normal}";
             break;
@@ -1059,6 +1053,7 @@ var resetStage = () => {
     currency.value = BigNumber.ZERO;
     currencyValues[lemma.level] = BigNumber.ZERO;
     qs[lemma.level] = initialQ[lemma.level];
+
     qDifferential = BigNumber.ZERO;
     theory.clearGraph();
 }
