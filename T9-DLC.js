@@ -19,7 +19,7 @@ var q61, q62, c61, c62, c63, c64;
 var q71, q72, c71, c72;
 var lemma;
 
-const lemmaCount = 7;
+const lemmaCount = 2;
 var provedLemmas = 0;
 var initialQ = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
 var qs = Array.from(initialQ);
@@ -909,7 +909,7 @@ var resetStage = () => {
 
 var canGoToPreviousStage = () => lemma.level > 0;
 var goToPreviousStage = () => lemma.level -= 1;
-var canGoToNextStage = () => true;
+var canGoToNextStage = () => lemma.level < lemma.maxLevel - 1;
 var goToNextStage = () => lemma.level += 1;
 
 init();

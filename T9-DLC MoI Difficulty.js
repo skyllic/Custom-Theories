@@ -19,7 +19,7 @@ var q61, q62, c61, c62, c63, c64;
 var q71, q72, c71, c72;
 var lemma;
 
-const lemmaCount = 7;
+const lemmaCount = 2;
 var provedLemmas = 0;
 var initialQ = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
 var qs = Array.from(initialQ);
@@ -120,29 +120,14 @@ var init = () => {
     // Lemma 3
     baseId += 100;
 
-    // q1
-    {
-        let getDesc = (level) => "q_1=" + getQ31(level).toString(0);
-        let getInfo = (level) => "q_1=" + getQ31(level).toString(0);
-        q31 = theory.createUpgrade(baseId + 0, currency, new FirstFreeCost(new ExponentialCost(10, Math.log2(4))));
-        q31.getDescription = (amount) => Utils.getMath(getDesc(q31.level));
-        q31.getInfo = (amount) => Utils.getMathTo(getInfo(q31.level), getInfo(q31.level + amount));
-    }
-
-    // q2
-    {
-        let getDesc = (level) => "q_2=2^{" + level + "}";
-        let getInfo = (level) => "q_2=" + getQ32(level).toString(0);
-        q32 = theory.createUpgrade(baseId + 1, currency, new ExponentialCost(50, Math.log2(50)));
-        q32.getDescription = (amount) => Utils.getMath(getDesc(q32.level));
-        q32.getInfo = (amount) => Utils.getMathTo(getInfo(q32.level), getInfo(q32.level + amount));
-    }
+  
 
     // c1
     {
-        let getDesc = (level) => "c_1=" + getC31(level).toString(0);
+        
+        let getDesc = (level) => "c_1=2^{" + level + "}";
         let getInfo = (level) => "c_1=" + getC31(level).toString(0);
-        c31 = theory.createUpgrade(baseId + 2, currency, new ExponentialCost(1e4, Math.log2(3)));
+        c31 = theory.createUpgrade(baseId + 2, currency, new FirstFreeCost(new ExponentialCost(10000, Math.log2(10))));
         c31.getDescription = (amount) => Utils.getMath(getDesc(c31.level));
         c31.getInfo = (amount) => Utils.getMathTo(getInfo(c31.level), getInfo(c31.level + amount));
     }
@@ -151,17 +136,17 @@ var init = () => {
     {
         let getDesc = (level) => "c_2=2^{" + level + "}";
         let getInfo = (level) => "c_2=" + getC32(level).toString(0);
-        c32 = theory.createUpgrade(baseId + 3, currency, new ExponentialCost(1e5, Math.log2(2)));
+        c32 = theory.createUpgrade(baseId + 3, currency, new ExponentialCost(100, Math.log2(10)));
         c32.getDescription = (amount) => Utils.getMath(getDesc(c32.level));
         c32.getInfo = (amount) => Utils.getMathTo(getInfo(c32.level), getInfo(c32.level + amount));
-        c32.maxLevel = 25;
+        
     }
 
     // c3
     {
         let getDesc = (level) => "c_3=2^{" + level + "}";
         let getInfo = (level) => "c_3=" + getC33(level).toString(0);
-        c33 = theory.createUpgrade(baseId + 4, currency, new ExponentialCost(100, Math.log2(100)));
+        c33 = theory.createUpgrade(baseId + 4, currency, new ExponentialCost(100, Math.log2(10)));
         c33.getDescription = (amount) => Utils.getMath(getDesc(c33.level));
         c33.getInfo = (amount) => Utils.getMathTo(getInfo(c33.level), getInfo(c33.level + amount));
     }
@@ -397,7 +382,7 @@ var init = () => {
         switch(level+1)
         {
             case 1: cost = 1e10; break;
-            case 2: cost = 3.85e22; break;
+            case 2: cost = 3.85e1; break;
             case 3: cost = 1e20; break;
             case 4: cost = 1.0001e10; break; // To compensate for numerical errors
             case 5: cost = 1e25; break;
@@ -430,8 +415,7 @@ var updateAvailability = () => {
     c24.isAvailable = lemma.level == 1;
     c25.isAvailable = lemma.level == 1;
 
-    q31.isAvailable = lemma.level == 2;
-    q32.isAvailable = lemma.level == 2;
+    
     c31.isAvailable = lemma.level == 2;
     c32.isAvailable = lemma.level == 2;
     c33.isAvailable = lemma.level == 2;
@@ -479,7 +463,7 @@ var tick = (elapsedTime, multiplier) => {
     {
         case 1: isLemmaStarted |= c11.level > 0; break;
         case 2: isLemmaStarted |= c21.level > 0 || c23.level > 0; break;
-        case 3: isLemmaStarted |= q31.level > 0; break;
+        case 3: isLemmaStarted |= c31.level > 0; break;
         case 4: isLemmaStarted |= c41.level > 0; break;
         case 5: isLemmaStarted |= c51.level > 0 || c52.level > 0 || c53.level > 0 || c54.level > 0 ||
                                   c55.level > 0 || c56.level > 0 || c57.level > 0 || c58.level > 0; break;
@@ -493,7 +477,7 @@ var tick = (elapsedTime, multiplier) => {
 
         switch(lemmaNumber)
         {
-            case 3: q1q2 = getQ31(q31.level) * getQ32(q32.level); break;
+            
             case 5: q1q2 = getQ51(q51.level) * getQ52(q52.level); break;
             case 6: q1q2 = getQ61(q61.level) * getQ62(q62.level); break;
             case 7: q1q2 = getQ71(q71.level) * getQ72(q72.level); break;
@@ -541,7 +525,7 @@ var tick = (elapsedTime, multiplier) => {
             let twoExpC1 = BigNumber.TWO.pow(c1);
             if (c31.level % 2 == 1)
                 twoExpC1 = -twoExpC1;
-            currency.value += dt * (twoExpC1 * c2 + c3 * (qt0 + qt1) / BigNumber.TWO);
+            currency.value += dt * (20*Math.sin(q/10) + 20 * (Math.cos(q/20))**2 + Math.min(20, Math.abs(20*Math.tan(q/10))) - q/10);
         }
         else if (lemmaNumber == 4)
         {
@@ -813,9 +797,8 @@ var getC25 = (level) => BigNumber.SIX.pow(level);
 
 var getQ2Exp = () => BigNumber.from((c21.level + c22.level + c23.level + c24.level) / 100.0);
 
-var getQ31 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 0);
-var getQ32 = (level) => BigNumber.TWO.pow(level);
-var getC31 = (level) => BigNumber.from(level);
+
+var getC31 = (level) => BigNumber.TWO.pow(level);
 var getC32 = (level) => BigNumber.TWO.pow(level);
 var getC33 = (level) => BigNumber.TWO.pow(level);
 
@@ -857,8 +840,7 @@ var resetStage = () => {
             c25.level = 0;
             break;
         case 3:
-            q31.level = 0;
-            q32.level = 0;
+            
             c31.level = 0;
             c32.level = 0;
             c33.level = 0;
@@ -905,7 +887,7 @@ var resetStage = () => {
 
 var canGoToPreviousStage = () => lemma.level > 0;
 var goToPreviousStage = () => lemma.level -= 1;
-var canGoToNextStage = () => true;
+var canGoToNextStage = () => lemma.level < lemma.maxLevel-1;
 var goToNextStage = () => lemma.level += 1;
 
 init();
