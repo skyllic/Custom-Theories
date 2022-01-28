@@ -166,7 +166,6 @@ var tick = (elapsedTime, multiplier) => {
     if((Math.random() < (1/(monsterDodge + 1.01 - dexterity.level)) || dexterity.level > monsterDodge)) {
         playerDamage = strengthSum * intPenalty * (Math.pow(Math.log10(bonus), strengthMilestone.level)) * bonus * dt;
         agilBurst += playerDamage * 0.1 * dt;
-        
         currency.value += strengthSum * intPenalty * bonus / monsterHPModifier * dt;
         
         monsterHP -= playerDamage;
@@ -246,7 +245,11 @@ var setInternalState = (state) => {
 
 var postPublish = () => {
     monsterLevel = 1;
+    isBoss = false;
+    boss1Counter = 0;
     strengthSum = 0;
+    intSum = 0;
+    agilBurst = 0;
     generateMonster(1);
 }
 
@@ -271,7 +274,7 @@ var getSecondaryEquation = () => {
 }
 
 
-var getPrimaryEquation = () => "{" + monsterHP + "} + {"+ monsterLevel +"} + {"+ boss1Counter +"}";
+var getPrimaryEquation = () => "{" + isBoss + "} + {"+ monsterLevel +"} + {"+ boss1Counter +"}";
 //var getSecondaryEquation = () => theory.latexSymbol + "=\\max\\rho^{0.1}";
 var getTertiaryEquation = () => "Str=" + strengthSum.toString() + "\\quad IntSum=" + intSum.toString();
 
