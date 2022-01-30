@@ -1,4 +1,4 @@
-let targetMultiplier = 8
+let targetMultiplier = 15
 
 
 function getTimeString(seconds) {
@@ -22,10 +22,13 @@ while (true) {
     "theory.tick(" + tickLength + ",1)\n" +
     "theory.upgrades[0].buy(-1)\n" +
     
+    
+    
+    
     "game.buy(theory.permanentUpgrades)\n" +
     "hasPublished = false\n" +
     "if(theory.milestonesUnused > 0){\n" +
-    "let m = [1,1,1,4,4,3,3,2,2,2,2,2]\n" +
+    "let m = [1,1,1,2,2,2]\n" +
     "theory.milestoneUpgrades[m[theory.milestonesTotal-1]-1].buy(1)}\n" +
 
     "if (theory.isPublicationAvailable) {\n" +

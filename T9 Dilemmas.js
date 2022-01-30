@@ -13,8 +13,8 @@ var version = 1;
 
 var c11, c12, c13;
 var c21, c22, c23, c24, c25;
-var q31, q32, c31, c32, c33;
-var c41, c42, c43;
+var c31, c32, c33;
+var c41, c42, c43, c44;
 var q51, q52, c51, c52, c53, c54, c55, c56, c57, c58;
 var q61, q62, c61, c62, c63, c64;
 var q71, q72, c71, c72;
@@ -22,7 +22,7 @@ var lemma;
 
 var PB = 100000;
 
-const lemmaCount = 2;
+const lemmaCount = 3;
 var provedLemmas = 0;
 var initialQ = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
 var qs = Array.from(initialQ);
@@ -184,6 +184,14 @@ var init = () => {
         c43 = theory.createUpgrade(baseId + 2, currency, new ExponentialCost(1, Math.log2(10)));
         c43.getDescription = (amount) => Utils.getMath(getDesc(c43.level));
         c43.getInfo = (amount) => Utils.getMathTo(getInfo(c43.level), getInfo(c43.level + amount));
+    }
+     // c4
+     {
+        let getDesc = (level) => "c_4=" + (level + 1) + "^2";
+        let getInfo = (level) => "c_4=" + getC44(level).toString(0);
+        c44 = theory.createUpgrade(baseId + 3, currency, new ExponentialCost(1, Math.log2(10)));
+        c44.getDescription = (amount) => Utils.getMath(getDesc(c44.level));
+        c44.getInfo = (amount) => Utils.getMathTo(getInfo(c44.level), getInfo(c44.level + amount));
     }
 
     // Lemma 5
@@ -402,7 +410,7 @@ var init = () => {
         {
             case 1: cost = 1e10; break;
             case 2: cost = 4.05e22; break;
-            case 3: cost = 1e20; break; 
+            case 3: cost = 2e15; break; 
             case 4: cost = 1.0001e10; break; // To compensate for numerical errors
             case 5: cost = 1e25; break;
             case 6: cost = 1e15; break;
@@ -445,6 +453,7 @@ var updateAvailability = () => {
     c41.isAvailable = lemma.level == 3;
     c42.isAvailable = lemma.level == 3;
     c43.isAvailable = lemma.level == 3;
+    c44.isAvailable = lemma.level == 3;
 
     q51.isAvailable = lemma.level == 4;
     q52.isAvailable = lemma.level == 4;
@@ -598,9 +607,8 @@ var tick = (elapsedTime, multiplier) => {
             let c1 = getC31(c31.level);
             let c2 = getC32(c32.level);
             let c3 = getC33(c33.level);
-            let twoExpC1 = BigNumber.TWO.pow(c1);
-            if (c31.level % 2 == 1)
-                twoExpC1 = -twoExpC1;
+           
+          
             let term1 = c1*(20*Math.sin(q/10) - q/30);
             let term2 = c2*(20 * Math.cos(q/20)**2 - q/30);
             let term3 = c3 * (Math.min(20, 20*Math.abs(Math.tan(q/10)))-q/30);
@@ -623,7 +631,7 @@ var tick = (elapsedTime, multiplier) => {
                 case 3:
                     let term1 = c1*(30*Math.sin(q/10) - q/30);
                     let term2 = c2*(30 * Math.cos(q/20)**2 - q/30);
-                    let term3 = c3 * (Math.min(20, 20*Math.abs(Math.tan(q/10)))-q/30);
+                    let term3 = c3 * (Math.min(30, 30*Math.abs(Math.tan(q/10)))-q/30);
                     currency.value += dt * (term1+term2+term3);
                     break;
                 case 4:
@@ -634,7 +642,7 @@ var tick = (elapsedTime, multiplier) => {
                     break;
             }
 
-            currency.value += dt * (term1+term2+term3);
+            
             
         }
         else if (lemmaNumber == 4)
@@ -642,6 +650,7 @@ var tick = (elapsedTime, multiplier) => {
             let c1 = getC41(c41.level);
             let c2 = getC42(c42.level);
             let c3 = getC43(c43.level);
+            let c4 = getC44(c44.level);
             qDifferential = c1 * c2 * (c3 * q - q.square() / BigNumber.FIVE);
             currency.value += dt * qDifferential;
         }
@@ -983,25 +992,18 @@ var getTertiaryEquation = () => {
        
        
     }
-    if (lemmaNumber == 4 || lemmaNumber == 5)
+    if (lemmaNumber == 4)
     {
-        result += ",\\; \\dot{\\rho}=";
-        result += qDifferential.toString(2);
+
     }
+   
     if (lemmaNumber == 6)
     {
-        var c3 = getC63(c63.level);
-        var c4 = getC64(c64.level);
-        var c3mc4 = c3 - c4;
-        result += ",\\; c_3-c_4=";
-        result += c3mc4.toNumber().toFixed(8);
+      
     }
     else if (lemmaNumber == 7)
     {
-        var c1 = getC71(c71.level);
-        var c2 = getC72(c72.level);
-        result += ",\\; c_1/c_2=";
-        result += (c1/c2).toNumber().toFixed(8);
+     
     }
 
     return result;
@@ -1031,6 +1033,7 @@ var getC33 = (level) => BigNumber.TWO.pow(level);
 var getC41 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 0);
 var getC42 = (level) => BigNumber.TWO.pow(level);
 var getC43 = (level) => BigNumber.from(level + 1).square();
+var getC44 = (level) => BigNumber.from(level + 1).square();
 
 var getQ51 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1);
 var getQ52 = (level) => BigNumber.TWO.pow(level);
@@ -1078,6 +1081,7 @@ var resetStage = () => {
             c41.level = 0;
             c42.level = 0;
             c43.level = 0;
+            c44.level = 0;
             c14.isAvailable = true;
             break;
         case 5:

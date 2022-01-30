@@ -1,8 +1,9 @@
-import { ExponentialCost, FirstFreeCost } from "../api/Costs";
+import { CustomCost, ExponentialCost, FirstFreeCost } from "../api/Costs";
 import { Localization } from "../api/Localization";
 import { parseBigNumber, BigNumber } from "../api/BigNumber";
 import { QuaternaryEntry, theory } from "../api/Theory";
 import { Utils } from "../api/Utils";
+import { LinearCost } from "../TheorySDK.Win.1.4.22/api/Costs";
 
 var id = "monster_battle"
 var name = "Monster Battle";
@@ -23,19 +24,29 @@ var playerIntPenalty = 0;
 var monsterDodge = 0;
 var monsterIntelligence = 0;
 var monsterDamage = 0;
-var monsterName = "";
+var monsterName = "Blob";
 var monsterMaxHP = BigNumber.HUNDRED;
 var monsterHPModifier = 1;
 var monsterHP = BigNumber.HUNDRED;
 var monsterLevel = 1;
-var boss1Counter = 0;
+var eliteCounter = 0;
+var bossCounter = 0;
+var finalBossCounter = 0;
+var isElite = false;
 var isBoss = false;
+var isFinalBoss = false;
+var monsterClass = "standard";
+
 var strengthMilestone, dexterityMilestone, intelligenceMilestone;
+var finalUpgrade;
+
 
 var quaternaryEntries = [];
 
 var init = () => {
     currency = theory.createCurrency();
+    //currency.value = BigNumber.from("1e890");
+    
 
     ///////////////////
     // Regular Upgrades
@@ -44,7 +55,7 @@ var init = () => {
     {
         let getDesc = (level) => "strength=" + getStrength(level).toString(0);
         let getInfo = (level) => "strength=" + getStrength(level).toString(0);
-        strength = theory.createUpgrade(0, currency, new FirstFreeCost(new ExponentialCost(10, Math.log2(10**0.125))));
+        strength = theory.createUpgrade(0, currency, new FirstFreeCost(new ExponentialCost(10, Math.log2(10**0.1225))));
         strength.getDescription = (amount) => Utils.getMath(getDesc(strength.level));
         strength.getInfo = (amount) => Utils.getMathTo(getInfo(strength.level), getInfo(strength.level + amount));
 
@@ -81,13 +92,20 @@ var init = () => {
 
     /////////////////////
     // Permanent Upgrades
-    theory.createPublicationUpgrade(0, currency, 1e10);
+    theory.createPublicationUpgrade(0, currency, 1e7);
     theory.createBuyAllUpgrade(1, currency, 1e1);
     theory.createAutoBuyerUpgrade(2, currency, 1e1);
+    finalUpgrade = theory.createPermanentUpgrade(3, currency, new LinearCost(BigNumber.from("1.79e308"), 0));
+    finalUpgrade.maxLevel = 1;
+    finalUpgrade.description = Localization.getUpgradeUnlockDesc("\\text{Final Milestone Upgrade}");
+    finalUpgrade.getInfo = (_) => Localization.getUpgradeUnlockInfo("\\text{Unlock your full power}");
+    finalUpgrade.boughtOrRefunded = (_) => updateAvailability();
+    
 
     /////////////////////
     // Checkpoint Upgrades
     theory.setMilestoneCost(new LinearCost(25*0.1, 25*0.1));
+    
 
     {
         strengthMilestone = theory.createMilestoneUpgrade(0, 3);
@@ -138,36 +156,38 @@ var tick = (elapsedTime, multiplier) => {
         playerHitChance = 1.0;
     } 
 
-    if(monsterHP <= 0 && isBoss == false) {
-        monsterLevel += 1;
-        currency.value += monsterMaxHP / monsterHPModifier;
-        generateMonster(monsterLevel);
-    } else if(monsterHP <= 0 && isBoss == true) {
-        strengthSum = 0;
-        intSum = 0;
-        agilBurst = 0;
-        
-        if(boss1Counter >= 5) {
-            monsterLevel += 1;
-            isBoss = false;
-            boss1Counter = 0;
-            
-        }
-        currency.value += monsterMaxHP / monsterHPModifier * 2;
-        generateMonster(monsterLevel);
-        
+    if(monsterHP <= 0) {
+        onMonsterDeath();
     }
+
     
-    strengthSum += getStrength(strength.level) / 10.0 * dt;
+    
+    let vStrength = getStrength(strength.level);
+
+    strengthSum += vStrength / BigNumber.from(10.0) * dt;
     intSum += 0.1*(intelligence.level**0.5 - intSum**0.5) * dt;
     if(intSum > intelligence.level) {
         intSum = intelligence.level
     }
     if((Math.random() < (1/(monsterDodge + 1.01 - dexterity.level)) || dexterity.level > monsterDodge)) {
-        playerDamage = strengthSum * intPenalty * (Math.pow(Math.log10(bonus), strengthMilestone.level)) * bonus * dt;
-        agilBurst += playerDamage * 0.1 * dt;
-        currency.value += strengthSum * intPenalty * bonus / monsterHPModifier * dt;
+       
+        playerDamage = strengthSum * intPenalty * bonus * dt;
+        playerDamage = playerDamage.pow(getStrengthMilestoneLevel(strengthMilestone.level));
         
+        if(finalUpgrade.level == 1) {
+            playerDamage = playerDamage * bonus.log10();
+        }
+        if(theory.publicationMultiplier > BigNumber.from(1e100**0.15)) {
+            playerDamage = playerDamage * 2;
+        }
+        
+        
+        agilBurst += playerDamage * 0.1 * dt;
+        if(playerDamage > monsterHP) {
+        currency.value += monsterHP / monsterHPModifier;
+        } else {
+            currency.value += playerDamage  / monsterHPModifier ;
+        }
         monsterHP -= playerDamage;
         
     }
@@ -181,51 +201,107 @@ var tick = (elapsedTime, multiplier) => {
     
 }
 
+var onMonsterDeath = () => {
+
+    if(monsterClass == "standard") {
+        monsterLevel += 1;
+        currency.value += monsterMaxHP / monsterHPModifier;
+        generateMonster(monsterLevel);
+    } else {
+        strengthSum = BigNumber.ZERO;
+        intSum = 0;
+        agilBurst = 0;
+        if(monsterClass == "elite") {
+            currency.value += monsterMaxHP / monsterHPModifier * 2;
+            if(eliteCounter >= 5) {
+                monsterLevel += 1;
+                eliteCounter = 0;
+                
+            }
+            generateMonster(monsterLevel);
+        } else if(monsterClass == "boss") {
+            currency.value += monsterMaxHP / monsterHPModifier * 2;
+            if(bossCounter >= 5) {
+                monsterLevel += 1;
+                bossCounter = 0;
+                
+            }
+            generateMonster(monsterLevel);
+        } else if(monsterClass == "ultimate") {
+            currency.value += monsterMaxHP / monsterHPModifier * 2;
+            if(finalBossCounter >= 5) {
+                monsterLevel += 1;
+                finalBossCounter = 0;
+                
+            }
+            generateMonster(monsterLevel);
+        }
+
+    }
+    
+   
+        
+    }
+
+/**Generates monster based on the monster level.  */
 var generateMonster = (monsterLevel) => {
+    //Level 1 monster is always a simple blob.
     if(monsterLevel == 1) {
         monsterHP = 100;
         monsterMaxHP = 100;
         monsterIntelligence = 0;
         monsterDodge = 0;
+        monsterName = "Blob";
+        monsterClass = "standard";
         return;
-    }
+    } 
 
-    if(monsterLevel % 25 == 23 && boss1Counter < 5) {
-        monsterHPModifier = 300;
-        monsterHP = BigNumber.TEN * monsterHPModifier * 10**monsterLevel;
-        monsterMaxHP = monsterHP;
-        monsterDodge = 0;
-        monsterIntelligence = 0;
-        monsterName = "Patchwerk Boss"; 
-        isBoss = true;
-        boss1Counter += 1;
+    if(monsterLevel % 1000 == 998 && finalBossCounter < 5) {
+       generateFinalBossMonster(monsterLevel);
+       return;
+    }
+    if(monsterLevel % 100 == 98 && bossCounter < 5) {
+        generateBossMonster(monsterLevel);
         return;
     }
+    if(monsterLevel % 25 == 23 && eliteCounter < 5) {
+        generateEliteMonster(monsterLevel);
+        return;
+    }
+    generateStandardMonster(monsterLevel);
+    return;
+
+
+}
+
+var generateStandardMonster = (monsterLevel) => {
+    
+    monsterClass = "standard";
 
     if(Math.random() < 1) {//monster type 1
         monsterHPModifier = 3;
-        monsterHP = BigNumber.TEN * monsterHPModifier * 10**monsterLevel;
+        monsterHP = BigNumber.TEN * monsterHPModifier * BigNumber.from(10).pow(monsterLevel);
         monsterMaxHP = monsterHP;
         monsterDodge = 0;
         monsterIntelligence = 0;
         monsterName = "Patchwerk"; 
     } else if(Math.random() < 0.0) {
         monsterHPModifier = 1;
-        monsterHP = BigNumber.TEN * 10**monsterLevel;
+        monsterHP = BigNumber.TEN * BigNumber.from(10).pow(monsterLevel);
         monsterMaxHP = monsterHP * monsterHPModifier;
         monsterDodge = Math.round(10 * monsterLevel - 9);
         monsterIntelligence = Math.round(10*monsterLevel - 10);
         monsterName = "Dodger";
     } else if(Math.random() < 1) {
         monsterHPModifier = 1;
-        monsterHP = BigNumber.TEN * 10**monsterLevel;
+        monsterHP = BigNumber.TEN * BigNumber.from(10).pow(monsterLevel);
         monsterMaxHP = monsterHP * monsterHPModifier;
         monsterDodge = Math.round(10*monsterLevel - 17);
         monsterIntelligence = Math.round(10*monsterLevel - 14);
         monsterName = "Wizzy";
     } else {
         monsterHPModifier = 1;
-        monsterHP = BigNumber.TEN * 10**monsterLevel;
+        monsterHP = BigNumber.TEN * BigNumber.from(10).pow(monsterLevel);
         monsterMaxHP = monsterHP * monsterHPModifier;
         monsterDodge = Math.round(10*monsterLevel - 11);
         monsterIntelligence = Math.round(10*monsterLevel - 11);
@@ -234,6 +310,47 @@ var generateMonster = (monsterLevel) => {
 
 
     
+}
+
+var generateEliteMonster = (monsterLevel) => {
+    monsterHPModifier = 300;
+    monsterHP = BigNumber.TEN * monsterHPModifier * BigNumber.from(10).pow(monsterLevel);
+    monsterMaxHP = monsterHP;
+    monsterDodge = 0;
+    monsterIntelligence = 0;
+    monsterName = "Patchwerk Elite";
+    monsterClass = "elite"; 
+    isElite = true;
+    eliteCounter += 1;
+    return;
+}
+
+var generateBossMonster = (monsterLevel) => {
+
+    monsterHPModifier = 3000;
+    monsterHP = BigNumber.TEN * monsterHPModifier * BigNumber.from(10).pow(monsterLevel);
+    monsterMaxHP = monsterHP;
+    monsterDodge = 0;
+    monsterIntelligence = 0;
+    monsterName = "Patchwerk Boss";
+    monsterClass = "boss"; 
+    isBoss = true;
+    bossCounter += 1;
+    return;
+   
+}
+
+var generateFinalBossMonster = (monsterLevel) => {
+    monsterHPModifier = 300000;
+    monsterHP = BigNumber.TEN * monsterHPModifier * BigNumber.from(10).pow(monsterLevel);
+    monsterMaxHP = monsterHP;
+    monsterDodge = 0;
+    monsterIntelligence = 0;
+    monsterName = "Patchwerk Ultimate";
+    monsterClass = "ultimate"; 
+    isfinalBoss = true;
+    finalBossCounter += 1;
+    return;
 }
 
 var getInternalState = () => `${q}`
@@ -245,12 +362,12 @@ var setInternalState = (state) => {
 
 var postPublish = () => {
     monsterLevel = 1;
-    isBoss = false;
-    boss1Counter = 0;
-    strengthSum = 0;
+    isElite = false;
+    eliteCounter = 0;
+    strengthSum = BigNumber.ZERO;
     intSum = 0;
     agilBurst = 0;
-    generateMonster(1);
+    generateStandardMonster(1);
 }
 
 var getSecondaryEquation = () => {
@@ -274,7 +391,7 @@ var getSecondaryEquation = () => {
 }
 
 
-var getPrimaryEquation = () => "{" + isBoss + "} + {"+ monsterLevel +"} + {"+ boss1Counter +"}";
+
 //var getSecondaryEquation = () => theory.latexSymbol + "=\\max\\rho^{0.1}";
 var getTertiaryEquation = () => "Str=" + strengthSum.toString() + "\\quad IntSum=" + intSum.toString();
 
@@ -288,7 +405,7 @@ var getDexterity = (level) => BigNumber.from(level);
 var getAgility = (level) => BigNumber.from(level);
 var getIntelligence = (level) => BigNumber.from(level);
 var getAgilit = (level) => BigNumber.TWO.pow(level);
-var getQ1Exp = (level) => BigNumber.from(1 + level * 0.05);
+var getStrengthMilestoneLevel = (level) => BigNumber.from(1 + level * 0.01);
 var getC3Exp = (level) => BigNumber.from(1 + level * 0.05);
 
 init();
