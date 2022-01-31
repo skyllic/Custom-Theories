@@ -9,7 +9,7 @@ var id = "T9-DLC-MoI"
 var name = "Dilemmas";
 var description = "Additional lemmas similar to ones in Theory 9";
 var authors = "Playspout";
-var version = 1;
+var version = 0.4;
 
 var c11, c12, c13;
 var c21, c22, c23, c24, c25;
@@ -22,7 +22,7 @@ var lemma;
 
 var PB = 100000;
 
-const lemmaCount = 3;
+const lemmaCount = 4;
 var provedLemmas = 0;
 var initialQ = [BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO, BigNumber.ZERO];
 var qs = Array.from(initialQ);
@@ -179,17 +179,17 @@ var init = () => {
 
     // c3
     {
-        let getDesc = (level) => "c_3=" + (level + 1) + "^2";
+        let getDesc = (level) => "c_3=" + (level + 1);
         let getInfo = (level) => "c_3=" + getC43(level).toString(0);
-        c43 = theory.createUpgrade(baseId + 2, currency, new ExponentialCost(1, Math.log2(10)));
+        c43 = theory.createUpgrade(baseId + 2, currency, new ExponentialCost(1, Math.log2(10**0.003)));
         c43.getDescription = (amount) => Utils.getMath(getDesc(c43.level));
         c43.getInfo = (amount) => Utils.getMathTo(getInfo(c43.level), getInfo(c43.level + amount));
     }
      // c4
      {
-        let getDesc = (level) => "c_4=" + (level + 1) + "^2";
+        let getDesc = (level) => "c_4=" + (level + 1);
         let getInfo = (level) => "c_4=" + getC44(level).toString(0);
-        c44 = theory.createUpgrade(baseId + 3, currency, new ExponentialCost(1, Math.log2(10)));
+        c44 = theory.createUpgrade(baseId + 3, currency, new ExponentialCost(1, Math.log2(10**0.003)));
         c44.getDescription = (amount) => Utils.getMath(getDesc(c44.level));
         c44.getInfo = (amount) => Utils.getMathTo(getInfo(c44.level), getInfo(c44.level + amount));
     }
@@ -651,8 +651,8 @@ var tick = (elapsedTime, multiplier) => {
             let c2 = getC42(c42.level);
             let c3 = getC43(c43.level);
             let c4 = getC44(c44.level);
-            qDifferential = c1 * c2 * (c3 * q - q.square() / BigNumber.FIVE);
-            currency.value += dt * qDifferential;
+            
+            currency.value += dt * c1 * c2 / (c3 * Math.E - c4 * Math.PI);
         }
         else if (lemmaNumber == 5)
         {
@@ -790,7 +790,7 @@ var getPrimaryEquation = () => {
                 
         if (lemma.level == 1) result += "Dilemma \\; 2";
         if (lemma.level == 2) result += "Dilemma \\; 3";
-        if (lemma.level == 3) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} \\varphi\\: >\\: 0";
+        if (lemma.level == 3) result += "Dilemma \\; 4";
         if (lemma.level == 4) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} \\tau\\: >\\: 0";
         if (lemma.level == 5) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} e^{bx_i\\varphi\\tau dt}\\: >\\: 1";
         if (lemma.level == 6) result += "\\scriptstyle{\\lim\\limits_{t \\to \\infty}} \\frac{e^t f(e^t)}{f(t)}\\: >\\: 1";
@@ -911,9 +911,39 @@ var getSecondaryEquation = () => {
     else if (lemmaNumber == 4)
     {
         result += "\\begin{matrix}";
-        result += "\\dot{\\rho}=c_1c_2(c_3q - q^2/5)";
+        switch(c14.level+1) {
+            
+            case 1:
+                result += "\\dot{\\rho} = \\frac{c_1c_2}{c_3e - c_4\\pi}\\\\";
+               
+                
+                break;
+            case 2:
+                result += "\\dot{\\rho} = a + b + c\\\\";
+                result += "a=c_1(100sin(\\frac{t}{10}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "b=c_2(100cos^2(\\frac{t}{20}) - \\frac{t}{30})";
+                
+                break;
+            case 3:
+                result += "\\dot{\\rho} = a + b\\\\";
+                result += "a=c_1(30sin(\\frac{t}{10}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "b=c_2(30cos^2(\\frac{t}{20}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "c=c_3(min(30, abs(30tan(\\frac{t}{10})))-\\frac{t}{30})";
+                break;
+            case 4:
+                result += "\\dot{\\rho} = a + b + c\\\\";
+                result += "a=c_1(20sin(\\frac{t}{10}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "b=c_2(20cos^2(\\frac{t}{20}) - \\frac{t}{30})";
+                result += "\\\\";
+                result += "c=c_3(min(20, abs(20tan(\\frac{t}{10})))-\\frac{t}{30})";
+                break;
+        }
         result += "\\\\";
-        result += "\\dot{q}=1";
+        result += "\\dot{t}=1";
         result += "\\end{matrix}";
     }
     else if (lemmaNumber == 5)
@@ -1032,8 +1062,8 @@ var getC33 = (level) => BigNumber.TWO.pow(level);
 
 var getC41 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 0);
 var getC42 = (level) => BigNumber.TWO.pow(level);
-var getC43 = (level) => BigNumber.from(level + 1).square();
-var getC44 = (level) => BigNumber.from(level + 1).square();
+var getC43 = (level) => BigNumber.from(level+2);
+var getC44 = (level) => BigNumber.from(level+1);
 
 var getQ51 = (level) => Utils.getStepwisePowerSum(level, 2, 10, 1);
 var getQ52 = (level) => BigNumber.TWO.pow(level);
