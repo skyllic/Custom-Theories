@@ -378,13 +378,13 @@ var tick = (elapsedTime, multiplier) => {
         // rho calculation
         switch (dimension.level) {
             case 0:
-                currency.value += 100 * base_currency_multiplier * (t * q.pow(BigNumber.TWO)).sqrt();
+                currency.value += 1000000 * base_currency_multiplier * (t * q.pow(BigNumber.TWO)).sqrt();
                 break;
             case 1:
-                currency.value += 100 * base_currency_multiplier * (t * q.pow(BigNumber.TWO) + (currency_R.value).pow(BigNumber.TWO)).sqrt();
+                currency.value += 1000000 * base_currency_multiplier * (t * q.pow(BigNumber.TWO) + (currency_R.value).pow(BigNumber.TWO)).sqrt();
                 break;
             case 2:
-                currency.value += 100 * base_currency_multiplier * a * (t * q.pow(BigNumber.TWO) + (currency_R.value).pow(BigNumber.TWO) + (currency_I.value).pow(BigNumber.TWO)).sqrt();
+                currency.value += 1000000 * base_currency_multiplier * a * (t * q.pow(BigNumber.TWO) + (currency_R.value).pow(BigNumber.TWO) + (currency_I.value).pow(BigNumber.TWO)).sqrt();
                 break;
         }
         max_currency = max_currency.max(currency.value);
