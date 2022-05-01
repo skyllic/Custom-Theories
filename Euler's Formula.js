@@ -507,13 +507,14 @@ var tick = (elapsedTime, multiplier) => {
     let dt = BigNumber.from(elapsedTime * multiplier);
     let bonus = theory.publicationMultiplier;
 
+    currency.value = BigNumber.from("1e238");
     // t calc
     t += q1.level == 0 ? 0 : ((1 + t_speed.level) / 5) * dt;
 
     // q calc
     let vq1 = getQ1(q1.level);
     let vq2 = getQ2(q2.level);
-    q += vq1 * vq2 * dt * bonus;
+    q += vq1 * vq2 * dt * bonus * 100;
 
     // a calc
     let va1 = getA1(a1.level);
@@ -561,7 +562,7 @@ var tick = (elapsedTime, multiplier) => {
     state.y = R.toNumber();
     state.z = I.toNumber();
 
-    let base_currency_multiplier = dt * bonus*100000000;
+    let base_currency_multiplier = dt * bonus*100;
 
     // CURRENCY CALC
     if(q1.level == 0) {
