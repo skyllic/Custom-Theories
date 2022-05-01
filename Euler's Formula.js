@@ -561,7 +561,7 @@ var tick = (elapsedTime, multiplier) => {
     state.y = R.toNumber();
     state.z = I.toNumber();
 
-    let base_currency_multiplier = dt * bonus;
+    let base_currency_multiplier = dt * bonus*100000000;
 
     // CURRENCY CALC
     if(q1.level == 0) {
@@ -572,21 +572,21 @@ var tick = (elapsedTime, multiplier) => {
         // rho calculation
         switch (dimension.level) {
             case 0:
-                currency.value += 100000000*base_currency_multiplier * (t * q.pow(BigNumber.TWO)).sqrt();
+                currency.value += base_currency_multiplier * (t * q.pow(BigNumber.TWO)).sqrt();
                 break;
             case 1:
-                currency.value += 100000000*base_currency_multiplier * (t * q.pow(BigNumber.TWO) + (currency_R.value).pow(BigNumber.TWO)).sqrt();
+                currency.value += base_currency_multiplier * (t * q.pow(BigNumber.TWO) + (currency_R.value).pow(BigNumber.TWO)).sqrt();
                 break;
             case 2:
-                currency.value += 100000000*base_currency_multiplier * a * (t * q.pow(BigNumber.TWO) + (currency_R.value).pow(BigNumber.TWO) + (currency_I.value).pow(BigNumber.TWO)).sqrt();
+                currency.value += base_currency_multiplier * a * (t * q.pow(BigNumber.TWO) + (currency_R.value).pow(BigNumber.TWO) + (currency_I.value).pow(BigNumber.TWO)).sqrt();
                 break;
         }
 
         // R calculation
-        currency_R.value += 100000000*dimension.level > 0 ? base_currency_multiplier * R.square() : BigNumber.ZERO;
+        currency_R.value += dimension.level > 0 ? base_currency_multiplier * R.square() : BigNumber.ZERO;
 
         // I calculation
-        currency_I.value += 100000000*dimension.level > 1 ? base_currency_multiplier * I.square() : BigNumber.ZERO;
+        currency_I.value += dimension.level > 1 ? base_currency_multiplier * I.square() : BigNumber.ZERO;
 
     }
 
