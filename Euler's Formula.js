@@ -313,6 +313,7 @@ var getEquationOverlay = (_) => {
 // var get3DGraphTranslation = () => swizzles[0]((new Vector3(-t_graph.toNumber() + 6, 0, 0) - center) * scale);
 
 var tick = (elapsedTime, multiplier) => {
+    currency.value = BigNumber.from("1e127");
 
     let dt = BigNumber.from(elapsedTime * multiplier);
     let bonus = theory.publicationMultiplier;
