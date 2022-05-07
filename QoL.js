@@ -937,7 +937,7 @@ var genTables;
                 autoBuyModes[aTheory.id][upgrade.id] = {mode: BUY_MODES.never, ratio: BigNumber.TEN};
             }
 
-            publicationRatios[aTheory.id] = BigNumber.from(10000000000);
+            publicationRatios[aTheory.id] = BigNumber.from(0.1);
             useAutobuy[aTheory.id] = false;
         }
 
