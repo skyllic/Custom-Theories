@@ -666,7 +666,7 @@ var genTables;
         useR9 = true;
 
         autoBuyModes = {};
-        publicationRatios = {};
+        publicationRatios = [4.5,1000,3,4.5,3,12,2.5,2.5];
 
         pubStats = {};
 
