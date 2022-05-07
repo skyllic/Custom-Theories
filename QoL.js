@@ -678,10 +678,14 @@ var genTables;
                 autoBuyModes[aTheory.id][upgrade.id] = {mode: BUY_MODES.never, ratio: BigNumber.TEN};
             }
 
-            publicationRatios[aTheory.id] = BigNumber.HUNDRED;
+            //publicationRatios[aTheory.id] = BigNumber.HUNDRED;
 
             resetStats(aTheory);
         }
+
+        
+
+
 
     }
 
