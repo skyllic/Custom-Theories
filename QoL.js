@@ -674,9 +674,18 @@ var genTables;
             if (aTheory.id == 8) continue;
 
             autoBuyModes[aTheory.id] = {};
-            for (const upgrade of aTheory.upgrades) {
+
+            if(aTheory.id == 1) {
+              for (const upgrade of aTheory.upgrades) {
                 autoBuyModes[aTheory.id][upgrade.id] = {mode: BUY_MODES.never, ratio: BigNumber.TEN};
+              }
+            } else {
+              for (const upgrade of aTheory.upgrades) {
+                autoBuyModes[aTheory.id][upgrade.id] = {mode: BUY_MODES.never, ratio: BigNumber.TEN};
+              }
             }
+            
+           
 
             //publicationRatios[aTheory.id] = BigNumber.HUNDRED;
 
