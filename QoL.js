@@ -94,7 +94,7 @@ var getCurrencyBarDelegate = () => {
         }
     });
     const theoryButton = ui.createButton({
-        text: "Theory Autobuy Menu" + aTheory.id,
+        text: "Theory Autobuy Menu" + aTheory.id.toString(),
         onClicked: () => {
             const aTheory = game.activeTheory;
             if (aTheory == null || aTheory.id == 8) return;
