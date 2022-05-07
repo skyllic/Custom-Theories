@@ -677,7 +677,7 @@ var genTables;
 
             if(aTheory.id == 1) {
               for (const upgrade of aTheory.upgrades) {
-                autoBuyModes[aTheory.id][upgrade.id] = {mode: BUY_MODES.never, ratio: BigNumber.TEN};
+                autoBuyModes[aTheory.id][upgrade.id] = {mode: BUY_MODES.always, ratio: BigNumber.TEN};
               }
             } else {
               for (const upgrade of aTheory.upgrades) {
