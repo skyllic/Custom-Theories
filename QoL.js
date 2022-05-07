@@ -1,8 +1,8 @@
-var id = "eaux_qol2";
+var id = "eaux_qol";
 var name = "QoL2 Theory";
 var description = "A custom theory for finer main theory auto-purchase controls and heuristic-based star/student reallocation";
 var authors = "Eaux Tacous#1021";
-var version = 20;
+var version = 19;
 var permissions = Permissions.PERFORM_GAME_ACTIONS
 
 var autoBuyPopups, publicationRatioPopups, autoFreqPopup;
@@ -111,7 +111,7 @@ var getCurrencyBarDelegate = () => {
             }),
             ui.createSwitch({
                 onColor: Color.SWITCH_BACKGROUND,
-                isToggled: () => aTheoryId >= 0 ? false || useAutobuy[aTheoryId] : false,
+                isToggled: () => aTheoryId >= 0 ? true || useAutobuy[aTheoryId] : true,
                 onTouched: (e) => {if (e.type == TouchType.PRESSED && aTheoryId >= 0) {
                     useAutobuy[aTheoryId] = !useAutobuy[aTheoryId];
                     setupToggles();
@@ -156,7 +156,7 @@ var setupTheory, setupToggles;
     }
 
     setupToggles = () => {
-        if (aTheoryId >= 0 && useAutobuy[aTheoryId]) game.activeTheory.isAutoBuyerActive = false;
+        if (aTheoryId >= 0 && useAutobuy[aTheoryId]) game.activeTheory.isAutoBuyerActive = true;
     }
 
     const updateATheory = () => {
