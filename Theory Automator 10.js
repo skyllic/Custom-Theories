@@ -77,6 +77,11 @@ var getQuaternaryEntries = () => {
 	let tauH;	
 		
 	for (let i = 0; i < Math.min(8, game.researchUpgrades[7].level); i++) {
+		try {
+			tau = game.theories[i].tauPublished.log10();
+		} catch(e) {
+			tau = 1;
+		}
 		tau = game.theories[i].tauPublished.log10();
 		tauH = base[i] * R9 ** (1 / timeMult[i]) / 2 ** ((tau - requirements[i]) / decay[i]);
 		quaternaryEntries[i].value = formatQValue(tauH);
