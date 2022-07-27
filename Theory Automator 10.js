@@ -1,5 +1,5 @@
-var id = "theory_auto";
-var name = "Theory automator";
+var id = "theory_auto 10";
+var name = "Theory automator 10";
 var description = "Automates purchases and publications in theories.";
 var authors = "rus9384";
 var version = "1.5i";
