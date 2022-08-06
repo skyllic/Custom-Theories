@@ -97,7 +97,11 @@ var getQuaternaryEntries = () => {
 	base = 1.51;
 	timeMult = 1;
 	
-	tau = game.theories[3].tauPublished.log10();
+	try {
+		tau = game.theories[3].tauPublished.log10();
+	} catch(e) {
+		tau = 1;
+	}
 	tauH = base * R9 ** (1 / timeMult) / 2 ** ((tau - requirements[3]) / decay);
 	quaternaryEntries[3].value = formatQValue(Math.max(tauH, quaternaryEntries[3].value));
 	
@@ -108,7 +112,11 @@ var getQuaternaryEntries = () => {
 	base = 7;
 	timeMult = 2;
 	
-	tau = game.theories[5].tauPublished.log10();
+	try {
+		tau = game.theories[6].tauPublished.log10();
+	} catch(e) {
+		tau = 1;
+	}
 	tauH = base * R9 ** (1 / timeMult) / 2 ** ((tau - requirements[5]) / decay);
 	quaternaryEntries[5].value = formatQValue(Math.max(tauH, quaternaryEntries[5].value));
 
