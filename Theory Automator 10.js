@@ -82,7 +82,7 @@ var getQuaternaryEntries = () => {
 		} catch(e) {
 			tau = 1;
 		}
-		tau = game.theories[i].tauPublished.log10();
+		
 		tauH = base[i] * R9 ** (1 / timeMult[i]) / 2 ** ((tau - requirements[i]) / decay[i]);
 		quaternaryEntries[i].value = formatQValue(tauH);
 	}
