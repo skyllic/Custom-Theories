@@ -1156,7 +1156,7 @@ class T4 {
 		if (this.theory.currencies[0].value == 0)
 			this.c1.buy(1);
 
-		let k = this.q * toBig(2).pow(this.c3.level) / (toBig(2).pow(this.c2.level) * this.getC1);
+		let k = (this.q+1) * toBig(2).pow(this.c3.level) / (toBig(2).pow(this.c2.level) * this.getC1);
 		let p = k > 0 ? 1 / k : 1;
 
 		let schedulerRefresh = false;
