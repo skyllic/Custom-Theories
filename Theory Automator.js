@@ -950,7 +950,7 @@ class T4 {
 
 		this.setPub();
 
-		this.ratio = (this.q + 1.0) * toBig(2).pow(this.c3.level) / (toBig(2).pow(this.c2.level) * this.getC1);
+		this.ratio = 1 + ((this.q + 1.0) * toBig(2).pow(this.c3.level) / (toBig(2).pow(this.c2.level) * this.getC1));
 
 		this.scheduledUpgrades = [];
 		this.scheduledLevels   = [0, 0, 0, 0, 0];
