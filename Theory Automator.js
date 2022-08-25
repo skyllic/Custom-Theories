@@ -1161,11 +1161,12 @@ class T4 {
 
 		let schedulerRefresh = false;
 
-		if (buyMax(this.c2, this.theory.currencies[0].value * p)) schedulerRefresh = true;
-		if (buyMax(this.c1, upgradeCost(this.c2) / 10)) schedulerRefresh = true;
+		
 		if (buyMax(this.c3, this.theory.currencies[0].value * k)) schedulerRefresh = true;
 		if (buyMax(this.q2, upgradeCost(this.c3) / this.q2weight)) schedulerRefresh = true;
 		if (buyMax(this.q1, upgradeCost(this.c3).min(upgradeCost(this.q2)) / 10)) schedulerRefresh = true;
+		if (buyMax(this.c2, this.theory.currencies[0].value * p)) schedulerRefresh = true;
+		if (buyMax(this.c1, upgradeCost(this.c2) / 10)) schedulerRefresh = true;
 
 		if (!schedulerRefresh && "" + k != "" + this.ratio) 
 			this.showSchedule();
