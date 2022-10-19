@@ -268,7 +268,7 @@ var updateAvailability = () => {
 }
 
 var tick = (elapsedTime, multiplier) => {
-    let dt = BigNumber.from(elapsedTime*multiplier) * Math.log10(theory.publicationMultiplier); 
+    let dt = BigNumber.from(elapsedTime*multiplier) * (3*Math.log10(theory.publicationMultiplier)+1); 
     let bonus = theory.publicationMultiplier; 
     let vq1 = getQ1(q1.level);
     let vq2 = getQ2(q2.level);
