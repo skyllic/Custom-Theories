@@ -97,7 +97,7 @@ var getQuaternaryEntries = () => {
 	
 	try {
 		tau = game.theories[3].tauPublished.log10();
-	} catch(e) {
+	} catch (e) {
 		tau = 1;
 	}
 	tauH = base * R9 ** (1 / timeMult) / 2 ** ((tau - requirements[3]) / decay);
