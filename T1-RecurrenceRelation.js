@@ -143,7 +143,8 @@ var tick = (elapsedTime, multiplier) => {
     time += elapsedTime;
 
     if (time >= timeLimit - 1e-8) {
-        let tickPower = tickspeed * BigNumber.from(time * multiplier * 1000000000);
+        let tickPower = tickspeed * BigNumber.from(time * multiplier * 1000000000 * 1000);
+        
 
         rhoNm2 = rhoNm1;
         rhoNm1 = rhoN;
@@ -199,7 +200,7 @@ var getPrimaryEquation = () => {
     return result;
 }
 
-var getSecondaryEquation = () => theory.latexSymbol + "=\\max\\rho";
+var getSecondaryEquation = () => "\\tau_{1}" + "=\\max\\rho";
 var getTertiaryEquation = () => Localization.format(stringTickspeed, getTickspeed().toString(0));
 
 var getPublicationMultiplier = (tau) => tau.pow(0.164) / BigNumber.THREE;
