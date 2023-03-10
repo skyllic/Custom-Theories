@@ -143,7 +143,7 @@ var tick = (elapsedTime, multiplier) => {
     time += elapsedTime;
 
     if (time >= timeLimit - 1e-8) {
-        let tickPower = tickspeed * BigNumber.from(time * multiplier * 1000000);
+        let tickPower = tickspeed * BigNumber.from(time * multiplier * 1000000000);
 
         rhoNm2 = rhoNm1;
         rhoNm1 = rhoN;
