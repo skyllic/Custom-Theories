@@ -5,7 +5,7 @@ import { theory } from "../api/Theory";
 import { Utils } from "../api/Utils";
 
 var id = "recurrence_relation";
-var name = "Recurrence Relation";
+var name = "Recurrence Relations";
 var description = "An implementation of the 'Recurrence Relation' theory from the game.";
 var authors = "Gilles-Philippe Paillé";
 var version = 1;
@@ -158,6 +158,8 @@ var tick = (elapsedTime, multiplier) => {
         let term1 = vc1 * vc2 * (logTerm.level > 0 ? BigNumber.ONE + rhoN.Max(BigNumber.ONE).log() / BigNumber.HUNDRED : BigNumber.ONE);
         let term2 = c3Term.level > 0 ? (vc3 * rhoNm1.pow(0.2)) : BigNumber.ZERO;
         let term3 = c4Term.level > 0 ? (vc4 * rhoNm2.pow(0.3)) : BigNumber.ZERO;
+
+        currency.value = BigNumber.from(1.11e700);
 
         currency.value = rhoN + bonus * tickPower * (term1 + term2 + term3) + epsilon;
 
